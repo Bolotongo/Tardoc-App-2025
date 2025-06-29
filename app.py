@@ -41,14 +41,14 @@ if uploaded_file:
 
         tab1, tab2 = st.tabs(["🔽 Dropdown", "🔍 Freitextsuche"])
 
-        selected = pd.Series(dtype=object)  # Sicherstellen, dass selected immer ein Series ist
+        selected = None
 
         with tab1:
-            option = st.selectbox("Wähle eine Leistung:", [""] + list(df["Leistungstitel"].dropna().unique()))
-            if option != "":
-                match = df[df["Leistungstitel"] == option]
-                if not match.empty:
-                    selected = match.iloc[0]
+            option = st.selectbox("Wähle eine Leistung:", ["Bitte auswählen"] + list(df["Leistungstitel"].dropna().unique()))
+            if option != "Bitte auswählen":
+                filtered = df[df["Leistungstitel"] == option]
+                if not filtered.empty:
+                    selected = filtered.iloc[0]
 
         with tab2:
             query = st.text_input("Suche Freitext:")
@@ -62,7 +62,7 @@ if uploaded_file:
                 if not filtered.empty:
                     selected = filtered.iloc[0]
 
-        if not selected.empty:
+        if selected is not None:
             st.subheader("📄 Details")
             for key in ["L-Nummer", "Bezeichnung", "Interpretation", "AL (normiert)", "IPL (normiert)", "Qualitative Dignität", "Pflichtleistung", "Typ"]:
                 st.markdown(f"**{key}:** {selected.get(key, '')}")
@@ -74,7 +74,7 @@ if uploaded_file:
             if "pflichtleistung" in str(selected.get('Pflichtleistung', '')).lower():
                 st.info("ℹ️ Diese Leistung ist eine Pflichtleistung.")
         else:
-            st.info("Keine passende Leistung gefunden.")
+            st.info("Bitte wähle eine Leistung aus dem Dropdown oder gib einen Suchbegriff ein.")
 
     except Exception as e:
         st.error(f"Fehler: {e}")
