@@ -85,15 +85,16 @@ if uploaded_file:
                 df["Leistungstitel"].dropna().unique()
             )
             if auswahl:
-                df_selected = df[df["Leistungstitel"].isin(auswahl)][["L-Nummer", "Leistungstitel", "Bezeichnung", "Tarifmechanik Regeln"]]
+                df_selected = df[df["Leistungstitel"].isin(auswahl)][["L-Nummer", "Leistungstitel", "Bezeichnung", "Interpretation", "Tarifmechanik Regeln"]]
                 st.subheader("📄 Details zu gewählten Positionen")
                 for idx, row in df_selected.iterrows():
+                    st.write("---")
                     st.markdown(f"**L-Nummer:** {row['L-Nummer']}")
                     st.markdown(f"**Leistungstitel:** {row['Leistungstitel']}")
                     st.markdown(f"**Bezeichnung:** {row['Bezeichnung']}")
+                    st.markdown(f"**Interpretation:** {row['Interpretation']}")
                     regeln_text = row['Tarifmechanik Regeln'] if pd.notna(row['Tarifmechanik Regeln']) else "Keine Angabe"
                     st.markdown(f"**Tarifmechanik Regeln:** {regeln_text}")
-                    st.markdown("---")
 
                 st.subheader("📌 Blocklogik-Check")
                 for _, row in df_selected.iterrows():
