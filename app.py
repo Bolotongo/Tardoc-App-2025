@@ -5,8 +5,6 @@ import os
 
 st.set_page_config(page_title="TARDOC Abrechnungshelfer", layout="wide")
 
-# Kein Passwortschutz mehr
-
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
 
 EXCEL_PATH = "tardoc_1.4b.xlsx"
@@ -34,9 +32,15 @@ if uploaded_file:
     tab1, tab2, tab3, tab4 = st.tabs(["🧭 GPT-KI", "🔽 Dropdown", "🔍 Freitextsuche", "✅ Mehrfachauswahl"])
 
     with tab1:
-        st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc!")
+        st.markdown("""
+            <div style='text-align: center;'>
+                <img src='https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif' width='150'>
+                <p style='font-size: 18px;'>Hi, ich bin <strong>NaviDoc</strong> – dein animierter Kompass-Helfer!</p>
+            </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("### 👋 Ich helfe dir bei TARDOC-Fragen.")
-        user_input = st.text_area("Beschreibe deine Leistung")
+        user_input = st.text_area("Beschreibe deine Leistung", height=200)
         if st.button("KI befragen") and user_input:
             with st.spinner("NaviDoc denkt nach..."):
                 response = openai.ChatCompletion.create(
@@ -48,7 +52,7 @@ if uploaded_file:
                 )
                 answer = response.choices[0].message["content"]
                 st.success("💡 Vorschlag der KI:")
-                st.write(answer)
+                st.text_area("Antwort der KI", value=answer, height=300)
 
     with tab2:
         option = st.selectbox("Wähle eine Leistung:", ["Bitte auswählen"] + list(df["Leistungstitel"].unique()))
