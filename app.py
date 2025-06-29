@@ -11,23 +11,18 @@ if password != "tardoc2025":
     st.warning("Zugang nur mit gültigem Passwort.")
     st.stop()
 
-st.title("🔧 TARDOC Abrechnungshelfer für Ärzt:innen")
+st.title("🔧 TARDOC Abrechnungshelfer für Ärzt:innen – inkl. Blocklogik")
 
-# Excel-Datei aus dem Projektordner laden
 EXCEL_PATH = "tardoc_1.4b.xlsx"
-
 if os.path.exists(EXCEL_PATH):
     uploaded_file = EXCEL_PATH
 else:
-    uploaded_file = st.file_uploader("Lade die TARDOC-Excel-Datei hoch (z. B. Version 1.4b)", type=[".xlsx"])
+    uploaded_file = st.file_uploader("Lade die TARDOC-Excel-Datei hoch", type=[".xlsx"])
 
 if uploaded_file:
     try:
         df = pd.read_excel(uploaded_file, sheet_name="Tarifpositionen", skiprows=4)
-
-        # Spalten bereinigen
         df.columns = df.columns.str.strip()
-        st.write("Spalten im DataFrame:", df.columns.tolist())
 
         df = df.rename(columns={
             df.columns[0]: "L-Nummer",
@@ -44,16 +39,14 @@ if uploaded_file:
 
         df = df.dropna(subset=["Leistungstitel"]).drop_duplicates()
 
-        st.write("Leistungstitel-Vorschau:", df["Leistungstitel"].head(10))
-
-        tab1, tab2 = st.tabs(["🔽 Dropdown-Auswahl", "🔍 Freitextsuche"])
+        tab1, tab2 = st.tabs(["🔽 Dropdown", "🔍 Freitextsuche"])
 
         with tab1:
-            option = st.selectbox("Wähle eine Leistung aus:", df["Leistungstitel"].dropna().unique())
-            result = df[df["Leistungstitel"] == option].iloc[0]
+            option = st.selectbox("Wähle eine Leistung:", df["Leistungstitel"].dropna().unique())
+            selected = df[df["Leistungstitel"] == option].iloc[0]
 
         with tab2:
-            query = st.text_input("Suche nach L-Nummer oder Begriff (z. B. AA.00 oder Konsultation):")
+            query = st.text_input("Suche Freitext:")
             if query:
                 query_lower = query.lower()
                 filtered = df[df.apply(lambda row:
@@ -61,30 +54,29 @@ if uploaded_file:
                     or query_lower in str(row["Leistungstitel"]).lower()
                     or query_lower in str(row["Bezeichnung"]).lower()
                     or query_lower in str(row["Interpretation"]).lower(), axis=1)]
+                if not filtered.empty:
+                    selected = filtered.iloc[0]
+                else:
+                    selected = None
             else:
-                filtered = pd.DataFrame()
+                selected = None
 
-            if not filtered.empty:
-                result = filtered.iloc[0]
-            else:
-                result = None
+        if selected is not None:
+            st.subheader("📄 Details")
+            for key in ["L-Nummer", "Bezeichnung", "Interpretation", "AL (normiert)", "IPL (normiert)", "Qualitative Dignität", "Pflichtleistung", "Typ"]:
+                st.markdown(f"**{key}:** {selected[key]}")
+            st.markdown(f"**Regeln:** {selected['Tarifmechanik Regeln']}")
 
-        if result is not None:
-            st.subheader("📄 Details zur Tarifposition")
-            st.markdown(f"**L-Nummer:** {result['L-Nummer']}")
-            st.markdown(f"**Bezeichnung:** {result['Bezeichnung']}")
-            st.markdown(f"**Interpretation:** {result['Interpretation']}")
-            st.markdown(f"**AL (normiert):** {result['AL (normiert)']}")
-            st.markdown(f"**IPL (normiert):** {result['IPL (normiert)']}")
-            st.markdown(f"**Qualitative Dignität:** {result['Qualitative Dignität']}")
-            st.markdown(f"**Pflichtleistung:** {result['Pflichtleistung']}")
-            st.markdown(f"**Typ:** {result['Typ']}")
-            st.markdown(f"**Regeln:** {result['Tarifmechanik Regeln']}")
+            # 🚦 Blocklogik: Zeige Warnung bei Kollisionen
+            regeln = str(selected['Tarifmechanik Regeln']).lower()
+            if "nicht kumulierbar" in regeln:
+                st.warning("⚠️ Diese Leistung ist laut Tarifmechanik nicht mit bestimmten anderen Positionen kombinierbar!")
+            if "pflichtleistung" in str(selected['Pflichtleistung']).lower():
+                st.info("ℹ️ Diese Leistung ist eine Pflichtleistung.")
         else:
-            if query:
-                st.warning("Keine passende Tarifposition gefunden.")
+            st.info("Keine passende Leistung gefunden.")
 
     except Exception as e:
-        st.error(f"Fehler beim Einlesen der Datei: {e}")
+        st.error(f"Fehler: {e}")
 else:
-    st.info("Bitte lade eine Excel-Datei im TARDOC-Format hoch oder speichere sie als 'tardoc_1.4b.xlsx' im App-Verzeichnis.")
+    st.info("Bitte lade eine Excel-Datei hoch oder speichere sie als 'tardoc_1.4b.xlsx'")
