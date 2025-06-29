@@ -44,11 +44,7 @@ if uploaded_file:
         selected = None
 
         with tab1:
-            option = st.selectbox(
-                "Wähle eine Leistung:",
-                ["Bitte auswählen"] + list(df["Leistungstitel"].dropna().unique()),
-                help="Die Blocklogik-Hinweise erscheinen direkt darunter."
-            )
+            option = st.selectbox("Wähle eine Leistung:", ["Bitte auswählen"] + list(df["Leistungstitel"].dropna().unique()))
             if option != "Bitte auswählen":
                 filtered = df[df["Leistungstitel"] == option]
                 if not filtered.empty:
@@ -90,3 +86,23 @@ if uploaded_file:
             )
             if auswahl:
                 df_selected = df[df["Leistungstitel"].isin(auswahl)]
+                st.subheader("📄 Details zu gewählten Positionen")
+                st.write(df_selected[["L-Nummer", "Leistungstitel", "Tarifmechanik Regeln"]])
+
+                st.subheader("📌 Blocklogik-Check")
+                for _, row in df_selected.iterrows():
+                    regeln = str(row["Tarifmechanik Regeln"]).lower()
+                    st.markdown(f"**{row['Leistungstitel']}:**")
+                    if "nicht kumulierbar" in regeln:
+                        st.warning("⚠️ Nicht kumulierbar!")
+                    if "nur zusammen mit" in regeln:
+                        st.info("ℹ️ Nur zusammen mit anderen Positionen abrechnen.")
+                    if "pflichtleistung" in regeln or "obligatorisch" in regeln:
+                        st.success("✅ Pflichtleistung.")
+                    if not any(x in regeln for x in ["nicht kumulierbar", "nur zusammen mit", "pflichtleistung", "obligatorisch"]):
+                        st.info("ℹ️ Keine speziellen Hinweise.")
+
+    except Exception as e:
+        st.error(f"Fehler: {e}")
+else:
+    st.info("Bitte lade eine Excel-Datei hoch oder speichere sie als 'tardoc_1.4b.xlsx'")
