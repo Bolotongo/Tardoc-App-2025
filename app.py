@@ -41,14 +41,14 @@ if uploaded_file:
 
         tab1, tab2 = st.tabs(["🔽 Dropdown", "🔍 Freitextsuche"])
 
-        selected = None  # Initialisierung
+        selected = pd.Series(dtype=object)  # Sicherstellen, dass selected immer ein Series ist
 
         with tab1:
-            option = st.selectbox("Wähle eine Leistung:", df["Leistungstitel"].dropna().unique())
-            if option:
-                selected = df[df["Leistungstitel"] == option]
-                if not selected.empty:
-                    selected = selected.iloc[0]
+            option = st.selectbox("Wähle eine Leistung:", [""] + list(df["Leistungstitel"].dropna().unique()))
+            if option != "":
+                match = df[df["Leistungstitel"] == option]
+                if not match.empty:
+                    selected = match.iloc[0]
 
         with tab2:
             query = st.text_input("Suche Freitext:")
@@ -62,16 +62,16 @@ if uploaded_file:
                 if not filtered.empty:
                     selected = filtered.iloc[0]
 
-        if selected is not None and not selected.empty:
+        if not selected.empty:
             st.subheader("📄 Details")
             for key in ["L-Nummer", "Bezeichnung", "Interpretation", "AL (normiert)", "IPL (normiert)", "Qualitative Dignität", "Pflichtleistung", "Typ"]:
-                st.markdown(f"**{key}:** {selected[key]}")
-            st.markdown(f"**Regeln:** {selected['Tarifmechanik Regeln']}")
+                st.markdown(f"**{key}:** {selected.get(key, '')}")
+            st.markdown(f"**Regeln:** {selected.get('Tarifmechanik Regeln', '')}")
 
-            regeln = str(selected['Tarifmechanik Regeln']).lower()
+            regeln = str(selected.get('Tarifmechanik Regeln', '')).lower()
             if "nicht kumulierbar" in regeln:
                 st.warning("⚠️ Diese Leistung ist laut Tarifmechanik nicht mit bestimmten anderen Positionen kombinierbar!")
-            if "pflichtleistung" in str(selected['Pflichtleistung']).lower():
+            if "pflichtleistung" in str(selected.get('Pflichtleistung', '')).lower():
                 st.info("ℹ️ Diese Leistung ist eine Pflichtleistung.")
         else:
             st.info("Keine passende Leistung gefunden.")
