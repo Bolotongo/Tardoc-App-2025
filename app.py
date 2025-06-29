@@ -1,25 +1,16 @@
-# FINALER FIX: Session-State mit []-Notation!
+# ✅ Absolute Minimalversion ohne Session-Konflikt
 import streamlit as st
 import pandas as pd
 import openai
 import os
 
-st.set_page_config(page_title="TARDOC Abrechnungshelfer mit KI", layout="wide")
+st.set_page_config(page_title="TARDOC Abrechnungshelfer", layout="wide")
 
-# Session-State sicher nur mit [] ansprechen
-if "access_granted" not in st.session_state:
-    st.session_state["access_granted"] = False
-
-if not st.session_state["access_granted"]:
-    st.title("🔒 Zugang geschützt")
-    password = st.text_input("Bitte Passwort eingeben:", type="password")
-    if st.button("Freischalten"):
-        if password == "tardoc2025":
-            st.session_state["access_granted"] = True
-        else:
-            st.error("Falsches Passwort.")
-    if not st.session_state["access_granted"]:
-        st.stop()
+# Einfacher Passwortschutz mit Textfeld ohne Session-State-Probleme
+password = st.text_input("🔒 Passwort eingeben:", type="password")
+if password != "tardoc2025":
+    st.warning("Falsches oder fehlendes Passwort.")
+    st.stop()
 
 # OpenAI API-Key laden
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
@@ -33,7 +24,6 @@ else:
 if uploaded_file:
     df = pd.read_excel(uploaded_file, sheet_name="Tarifpositionen", skiprows=4)
     df.columns = df.columns.str.strip()
-
     df = df.rename(columns={
         df.columns[0]: "L-Nummer",
         df.columns[1]: "Bezeichnung",
@@ -50,8 +40,8 @@ if uploaded_file:
     tab1, tab2, tab3, tab4 = st.tabs(["🧭 GPT-KI", "🔽 Dropdown", "🔍 Freitextsuche", "✅ Mehrfachauswahl"])
 
     with tab1:
-        st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc – dein KI-Kompass!")
-        st.markdown("### 👋 Hallo! Ich bin NaviDoc – dein smarter KI-Kompass.")
+        st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc!")
+        st.markdown("### 👋 Ich helfe dir bei TARDOC-Fragen.")
         user_input = st.text_area("Beschreibe deine Leistung")
         if st.button("KI befragen") and user_input:
             with st.spinner("NaviDoc denkt nach..."):
@@ -89,4 +79,4 @@ if uploaded_file:
             selected_df = df[df["Leistungstitel"].isin(auswahl)]
             st.write(selected_df[["L-Nummer", "Leistungstitel", "Tarifmechanik Regeln"]])
 else:
-    st.info("Bitte lade zuerst deine Excel-Datei hoch, um alle Tabs zu aktivieren.")
+    st.info("Bitte lade zuerst deine Excel-Datei hoch.")
