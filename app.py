@@ -1,4 +1,4 @@
-# ✅ Letzter Fix: Session-State ohne Konflikte mit "button" in Streamlit Cloud
+# FINALER FIX: Session-State mit []-Notation!
 import streamlit as st
 import pandas as pd
 import openai
@@ -6,19 +6,19 @@ import os
 
 st.set_page_config(page_title="TARDOC Abrechnungshelfer mit KI", layout="wide")
 
-# Besser: Speichere Passwort-Eingabe direkt in Session-State
+# Session-State sicher nur mit [] ansprechen
 if "access_granted" not in st.session_state:
-    st.session_state.access_granted = False
+    st.session_state["access_granted"] = False
 
-if not st.session_state.access_granted:
+if not st.session_state["access_granted"]:
     st.title("🔒 Zugang geschützt")
     password = st.text_input("Bitte Passwort eingeben:", type="password")
     if st.button("Freischalten"):
         if password == "tardoc2025":
-            st.session_state.access_granted = True
+            st.session_state["access_granted"] = True
         else:
             st.error("Falsches Passwort.")
-    if not st.session_state.access_granted:
+    if not st.session_state["access_granted"]:
         st.stop()
 
 # OpenAI API-Key laden
