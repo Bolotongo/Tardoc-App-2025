@@ -11,7 +11,7 @@ if password != "tardoc2025":
     st.warning("Zugang nur mit gültigem Passwort.")
     st.stop()
 
-st.title("🔧 TARDOC Abrechnungshelfer für Ärzt:innen – inkl. Blocklogik")
+st.title("🔧 TARDOC Abrechnungshelfer inkl. smarter Blocklogik")
 
 EXCEL_PATH = "tardoc_1.4b.xlsx"
 if os.path.exists(EXCEL_PATH):
@@ -68,13 +68,17 @@ if uploaded_file:
                 st.markdown(f"**{key}:** {selected.get(key, '')}")
             st.markdown(f"**Regeln:** {selected.get('Tarifmechanik Regeln', '')}")
 
+            # Smarte Blocklogik: Keywords aus Regeln analysieren
             regeln = str(selected.get('Tarifmechanik Regeln', '')).lower()
             if "nicht kumulierbar" in regeln:
-                st.warning("⚠️ Diese Leistung ist laut Tarifmechanik nicht mit bestimmten anderen Positionen kombinierbar!")
-            if "pflichtleistung" in str(selected.get('Pflichtleistung', '')).lower():
-                st.info("ℹ️ Diese Leistung ist eine Pflichtleistung.")
+                st.warning("⚠️ Achtung: Diese Leistung ist laut Regeln nicht kumulierbar mit anderen!")
+            if "nur zusammen mit" in regeln:
+                st.info("ℹ️ Hinweis: Diese Leistung darf nur zusammen mit anderen spezifischen Leistungen abgerechnet werden.")
+            if "pflichtleistung" in regeln or "obligatorisch" in regeln:
+                st.success("✅ Diese Position ist eine Pflichtleistung laut Regeln.")
+
         else:
-            st.info("Bitte wähle eine Leistung aus dem Dropdown oder gib einen Suchbegriff ein.")
+            st.info("Bitte wähle eine Leistung oder gib einen Suchbegriff ein.")
 
     except Exception as e:
         st.error(f"Fehler: {e}")
