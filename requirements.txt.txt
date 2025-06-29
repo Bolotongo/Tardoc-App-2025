@@ -1,9 +1,0 @@
-# requirements.txt (komplett neu)
-streamlit
-pandas
-openai
-
-# Optional: weitere Pakete falls du sie brauchst
-# numpy
-# scikit-learn
-# ...
