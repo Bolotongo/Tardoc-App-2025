@@ -6,10 +6,17 @@ import os
 st.set_page_config(page_title="TARDOC Abrechnungshelfer mit KI", layout="wide")
 
 # Passwortschutz
-st.title("🔒 Zugang geschützt")
-password = st.text_input("Bitte Passwort eingeben:", type="password")
-if password != "tardoc2025":
-    st.warning("Zugang nur mit gültigem Passwort.")
+if "access_granted" not in st.session_state:
+    st.session_state["access_granted"] = False
+
+if not st.session_state["access_granted"]:
+    st.title("🔒 Zugang geschützt")
+    password = st.text_input("Bitte Passwort eingeben:", type="password")
+    if st.button("Freischalten"):
+        if password == "tardoc2025":
+            st.session_state["access_granted"] = True
+        else:
+            st.error("Falsches Passwort.")
     st.stop()
 
 # OpenAI API-Key laden
