@@ -1,4 +1,3 @@
-# ✅ Noch stabiler: Nur eine Zeile prüfen und .strip() verwenden
 import streamlit as st
 import pandas as pd
 import openai
@@ -6,13 +5,8 @@ import os
 
 st.set_page_config(page_title="TARDOC Abrechnungshelfer", layout="wide")
 
-# Einfache Passwortprüfung – robust ohne Session-State
-password = st.text_input("🔒 Passwort eingeben:", type="password").strip()
+# Kein Passwortschutz mehr
 
-if password != "tardoc2025":
-    st.stop()
-
-# Rest bleibt unverändert
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
 
 EXCEL_PATH = "tardoc_1.4b.xlsx"
