@@ -87,7 +87,11 @@ if uploaded_file:
             if auswahl:
                 df_selected = df[df["Leistungstitel"].isin(auswahl)]
                 st.subheader("📄 Details zu gewählten Positionen")
-                st.write(df_selected[["L-Nummer", "Leistungstitel", "Tarifmechanik Regeln"]])
+                for _, row in df_selected.iterrows():
+                    st.markdown(f"**L-Nummer:** {row['L-Nummer']}")
+                    st.markdown(f"**Leistungstitel:** {row['Leistungstitel']}")
+                    st.markdown(f"**Tarifmechanik Regeln:** {row['Tarifmechanik Regeln']}")
+                    st.markdown("---")
 
                 st.subheader("📌 Blocklogik-Check")
                 for _, row in df_selected.iterrows():
