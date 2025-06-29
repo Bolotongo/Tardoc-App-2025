@@ -1,6 +1,4 @@
-# Fix: `st.experimental_rerun()` kann auf Streamlit Cloud manchmal Probleme machen.
-# Sicherer: Vermeide den Rerun und nutze nur Session State.
-
+# ✅ Fix für Streamlit Cloud: "Freischalten" Button darf nicht mehrfach geprüft werden
 import streamlit as st
 import pandas as pd
 import openai
@@ -8,7 +6,7 @@ import os
 
 st.set_page_config(page_title="TARDOC Abrechnungshelfer mit KI", layout="wide")
 
-# Passwortschutz ohne Rerun
+# Passwortschutz ohne Konflikte
 if "access_granted" not in st.session_state:
     st.session_state["access_granted"] = False
 
@@ -20,13 +18,11 @@ if not st.session_state["access_granted"]:
             st.session_state["access_granted"] = True
         else:
             st.error("Falsches Passwort.")
-    if not st.session_state["access_granted"]:
-        st.stop()
+    st.stop()
 
 # OpenAI API-Key laden
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
 
-# Tabs: GPT-KI als eigener Tab
 EXCEL_PATH = "tardoc_1.4b.xlsx"
 if os.path.exists(EXCEL_PATH):
     uploaded_file = EXCEL_PATH
