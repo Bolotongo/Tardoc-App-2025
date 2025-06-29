@@ -44,7 +44,11 @@ if uploaded_file:
         selected = None
 
         with tab1:
-            option = st.selectbox("Wähle eine Leistung:", ["Bitte auswählen"] + list(df["Leistungstitel"].dropna().unique()))
+            option = st.selectbox(
+                "Wähle eine Leistung:",
+                ["Bitte auswählen"] + list(df["Leistungstitel"].dropna().unique()),
+                help="Wähle eine Leistung aus dem Dropdown. Die Blocklogik-Hinweise erscheinen direkt darunter."
+            )
             if option != "Bitte auswählen":
                 filtered = df[df["Leistungstitel"] == option]
                 if not filtered.empty:
@@ -63,19 +67,23 @@ if uploaded_file:
                     selected = filtered.iloc[0]
 
         if selected is not None:
-            st.subheader("📄 Details")
-            for key in ["L-Nummer", "Bezeichnung", "Interpretation", "AL (normiert)", "IPL (normiert)", "Qualitative Dignität", "Pflichtleistung", "Typ"]:
-                st.markdown(f"**{key}:** {selected.get(key, '')}")
-            st.markdown(f"**Regeln:** {selected.get('Tarifmechanik Regeln', '')}")
+            st.subheader("📄 Details zur ausgewählten Position")
+            st.write(f"**L-Nummer:** {selected['L-Nummer']}")
+            st.write(f"**Leistungstitel:** {selected['Leistungstitel']}")
+            st.write(f"**Bezeichnung:** {selected['Bezeichnung']}")
+            st.write(f"**Interpretation:** {selected['Interpretation']}")
+            st.write(f"**Tarifmechanik Regeln:** {selected['Tarifmechanik Regeln']}")
 
-            # Smarte Blocklogik: Keywords aus Regeln analysieren
             regeln = str(selected.get('Tarifmechanik Regeln', '')).lower()
+            st.subheader("📌 Blocklogik Hinweise:")
             if "nicht kumulierbar" in regeln:
-                st.warning("⚠️ Achtung: Diese Leistung ist laut Regeln nicht kumulierbar mit anderen!")
+                st.warning("⚠️ Diese Leistung ist laut Regeln nicht kumulierbar mit anderen.")
             if "nur zusammen mit" in regeln:
-                st.info("ℹ️ Hinweis: Diese Leistung darf nur zusammen mit anderen spezifischen Leistungen abgerechnet werden.")
+                st.info("ℹ️ Diese Leistung darf nur zusammen mit anderen spezifischen Positionen abgerechnet werden.")
             if "pflichtleistung" in regeln or "obligatorisch" in regeln:
                 st.success("✅ Diese Position ist eine Pflichtleistung laut Regeln.")
+            if not any(x in regeln for x in ["nicht kumulierbar", "nur zusammen mit", "pflichtleistung", "obligatorisch"]):
+                st.info("ℹ️ Keine speziellen Blocklogik-Hinweise vorhanden.")
 
         else:
             st.info("Bitte wähle eine Leistung oder gib einen Suchbegriff ein.")
