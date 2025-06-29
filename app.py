@@ -41,9 +41,14 @@ if uploaded_file:
 
         tab1, tab2 = st.tabs(["🔽 Dropdown", "🔍 Freitextsuche"])
 
+        selected = None  # Initialisierung
+
         with tab1:
             option = st.selectbox("Wähle eine Leistung:", df["Leistungstitel"].dropna().unique())
-            selected = df[df["Leistungstitel"] == option].iloc[0]
+            if option:
+                selected = df[df["Leistungstitel"] == option]
+                if not selected.empty:
+                    selected = selected.iloc[0]
 
         with tab2:
             query = st.text_input("Suche Freitext:")
@@ -56,18 +61,13 @@ if uploaded_file:
                     or query_lower in str(row["Interpretation"]).lower(), axis=1)]
                 if not filtered.empty:
                     selected = filtered.iloc[0]
-                else:
-                    selected = None
-            else:
-                selected = None
 
-        if selected is not None:
+        if selected is not None and not selected.empty:
             st.subheader("📄 Details")
             for key in ["L-Nummer", "Bezeichnung", "Interpretation", "AL (normiert)", "IPL (normiert)", "Qualitative Dignität", "Pflichtleistung", "Typ"]:
                 st.markdown(f"**{key}:** {selected[key]}")
             st.markdown(f"**Regeln:** {selected['Tarifmechanik Regeln']}")
 
-            # 🚦 Blocklogik: Zeige Warnung bei Kollisionen
             regeln = str(selected['Tarifmechanik Regeln']).lower()
             if "nicht kumulierbar" in regeln:
                 st.warning("⚠️ Diese Leistung ist laut Tarifmechanik nicht mit bestimmten anderen Positionen kombinierbar!")
