@@ -13,8 +13,8 @@ if password != "tardoc2025":
 
 st.title("🔧 TARDOC Abrechnungshelfer für Ärzt:innen")
 
-# Versuche, Datei direkt aus Projektverzeichnis zu laden
-EXCEL_PATH = "tardoc_1.4b.xlsx"  # Datei im selben Verzeichnis wie app.py erwartet
+# Excel-Datei aus dem Projektordner laden
+EXCEL_PATH = "tardoc_1.4b.xlsx"
 
 if os.path.exists(EXCEL_PATH):
     uploaded_file = EXCEL_PATH
@@ -23,8 +23,12 @@ else:
 
 if uploaded_file:
     try:
-        # Lade Daten aus dem richtigen Tabellenblatt, ab Zeile 5
         df = pd.read_excel(uploaded_file, sheet_name="Tarifpositionen", skiprows=4)
+
+        # Spalten bereinigen
+        df.columns = df.columns.str.strip()
+        st.write("Spalten im DataFrame:", df.columns.tolist())
+
         df = df.rename(columns={
             df.columns[0]: "L-Nummer",
             df.columns[1]: "Bezeichnung",
@@ -38,18 +42,18 @@ if uploaded_file:
             df.columns[16]: "Tarifmechanik Regeln"
         })
 
-        # Bereinige Daten
         df = df.dropna(subset=["Leistungstitel"]).drop_duplicates()
 
-        # Tabs: Dropdown oder Freitextsuche
+        st.write("Leistungstitel-Vorschau:", df["Leistungstitel"].head(10))
+
         tab1, tab2 = st.tabs(["🔽 Dropdown-Auswahl", "🔍 Freitextsuche"])
 
         with tab1:
-            option = st.selectbox("Wähle eine Leistung aus:", df["Leistungstitel"].unique())
+            option = st.selectbox("Wähle eine Leistung aus:", df["Leistungstitel"].dropna().unique())
             result = df[df["Leistungstitel"] == option].iloc[0]
 
         with tab2:
-            query = st.text_input("Suche nach L-Nummer oder Begriff (z. B. AA.00 oder Konsultation):")
+            query = st.text_input("Suche nach L-Nummer oder Begriff (z. B. AA.00 oder Konsultation):")
             if query:
                 query_lower = query.lower()
                 filtered = df[df.apply(lambda row:
