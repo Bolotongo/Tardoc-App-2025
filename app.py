@@ -5,13 +5,19 @@ import os
 
 st.set_page_config(page_title="TARDOC Abrechnungshelfer mit KI", layout="wide")
 
+# Passwortschutz
+st.title("🔒 Zugang geschützt")
+password = st.text_input("Bitte Passwort eingeben:", type="password")
+if password != "tardoc2025":
+    st.warning("Zugang nur mit gültigem Passwort.")
+    st.stop()
+
 # OpenAI API-Key laden
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
 
-# Navigation umstellen: Immer GPT-Startseite plus Tabs in EINER Ansicht
 st.title("🧭 TARDOC KI-Abrechnungshelfer – NaviDoc")
 
-# Animation: Kompass als GIF direkt oben immer sichtbar
+# Animation: Kompass-GIF
 st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc – dein KI-Kompass!")
 st.markdown("### 👋 Hallo! Ich bin NaviDoc – dein smarter KI-Kompass.")
 
@@ -30,7 +36,7 @@ if st.button("KI befragen") and user_input:
         st.success("💡 Vorschlag der KI:")
         st.write(answer)
 
-# Danach Tabs immer sichtbar
+# Tabs für weitere Funktionen
 EXCEL_PATH = "tardoc_1.4b.xlsx"
 if os.path.exists(EXCEL_PATH):
     uploaded_file = EXCEL_PATH
