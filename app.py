@@ -23,7 +23,28 @@ if not st.session_state["access_granted"]:
 # OpenAI API-Key laden
 openai.api_key = st.secrets.get("OPENAI_API_KEY", "DEIN_KEY_HIER")
 
-# Tabs mit KI als eigener Tab
+# Tabs immer anzeigen, auch wenn keine Excel hochgeladen wurde
+tab1, tab2, tab3, tab4 = st.tabs(["🧭 GPT-KI", "🔽 Dropdown", "🔍 Freitextsuche", "✅ Mehrfachauswahl"])
+
+# Tab 1: GPT-KI immer aktiv
+with tab1:
+    st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc – dein KI-Kompass!")
+    st.markdown("### 👋 Hallo! Ich bin NaviDoc – dein smarter KI-Kompass.")
+    user_input = st.text_area("Beschreibe deine Leistung")
+    if st.button("KI befragen") and user_input:
+        with st.spinner("NaviDoc denkt nach..."):
+            response = openai.ChatCompletion.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "system", "content": "Du bist ein TARDOC-Abrechnungshelfer. Suche passende L-Nummern und erkläre sie."},
+                    {"role": "user", "content": user_input}
+                ]
+            )
+            answer = response.choices[0].message["content"]
+            st.success("💡 Vorschlag der KI:")
+            st.write(answer)
+
+# Excel laden für die anderen Tabs
 EXCEL_PATH = "tardoc_1.4b.xlsx"
 if os.path.exists(EXCEL_PATH):
     uploaded_file = EXCEL_PATH
@@ -46,25 +67,6 @@ if uploaded_file:
         df.columns[8]: "Typ",
         df.columns[16]: "Tarifmechanik Regeln"
     }).dropna(subset=["Leistungstitel"]).drop_duplicates()
-
-    tab1, tab2, tab3, tab4 = st.tabs(["🧭 GPT-KI", "🔽 Dropdown", "🔍 Freitextsuche", "✅ Mehrfachauswahl"])
-
-    with tab1:
-        st.image("https://media.giphy.com/media/3ov9k7jQXQ2FznhkCs/giphy.gif", width=150, caption="Hi, ich bin NaviDoc – dein KI-Kompass!")
-        st.markdown("### 👋 Hallo! Ich bin NaviDoc – dein smarter KI-Kompass.")
-        user_input = st.text_area("Beschreibe deine Leistung")
-        if st.button("KI befragen") and user_input:
-            with st.spinner("NaviDoc denkt nach..."):
-                response = openai.ChatCompletion.create(
-                    model="gpt-4o",
-                    messages=[
-                        {"role": "system", "content": "Du bist ein TARDOC-Abrechnungshelfer. Suche passende L-Nummern und erkläre sie."},
-                        {"role": "user", "content": user_input}
-                    ]
-                )
-                answer = response.choices[0].message["content"]
-                st.success("💡 Vorschlag der KI:")
-                st.write(answer)
 
     with tab2:
         option = st.selectbox("Wähle eine Leistung:", ["Bitte auswählen"] + list(df["Leistungstitel"].unique()))
